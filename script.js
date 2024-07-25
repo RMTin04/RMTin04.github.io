@@ -27,12 +27,12 @@ d3.csv("global_temperature.csv").then(function(data) {
         .range([0, width]);
   
     const y = d3.scaleLinear()
-        .domain(d3.extent(data, d => d.Temperature))
+        .domain([d3.min(data, d => d.Temperature), d3.max(data, d => d.Temperature)])
         .range([height, 0]);
   
     svg.append("g")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
+        .call(d3.axisBottom(x).tickFormat(d3.format("d")));
   
     svg.append("g")
         .call(d3.axisLeft(y));
