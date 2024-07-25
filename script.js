@@ -1,9 +1,26 @@
 d3.csv("global_temperature.csv").then(function(data) {
-    // Parse the data
+    // Parse the data and compute annual averages
     data.forEach(d => {
       d.Year = +d.Year;
-      d.Temperature = +d.Temperature;
+      d.Jan = +d.Jan;
+      d.Feb = +d.Feb;
+      d.Mar = +d.Mar;
+      d.Apr = +d.Apr;
+      d.May = +d.May;
+      d.Jun = +d.Jun;
+      d.Jul = +d.Jul;
+      d.Aug = +d.Aug;
+      d.Sep = +d.Sep;
+      d.Oct = +d.Oct;
+      d.Nov = +d.Nov;
+      d.Dec = +d.Dec;
+  
+      // Calculate annual average
+      d.AnnualAvg = (d.Jan + d.Feb + d.Mar + d.Apr + d.May + d.Jun + d.Jul + d.Aug + d.Sep + d.Oct + d.Nov + d.Dec) / 12;
     });
+  
+    // Filter out rows with missing data
+    data = data.filter(d => !isNaN(d.AnnualAvg));
   
     // Scene 1: Introduction to global temperatures
     const scene1 = d3.select("#scene-1");
@@ -27,7 +44,7 @@ d3.csv("global_temperature.csv").then(function(data) {
         .range([0, width]);
   
     const y = d3.scaleLinear()
-        .domain([d3.min(data, d => d.Temperature), d3.max(data, d => d.Temperature)])
+        .domain([d3.min(data, d => d.AnnualAvg), d3.max(data, d => d.AnnualAvg)])
         .range([height, 0]);
   
     svg.append("g")
@@ -44,7 +61,7 @@ d3.csv("global_temperature.csv").then(function(data) {
         .attr("stroke-width", 1.5)
         .attr("d", d3.line()
             .x(d => x(d.Year))
-            .y(d => y(d.Temperature)));
+            .y(d => y(d.AnnualAvg)));
   
     // Annotations for Scene 2
     svg.append("text")
