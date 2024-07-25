@@ -67,12 +67,37 @@ d3.csv("global_temperature.csv").then(function(data) {
             .x(d => x(d.Year))
             .y(d => y(d.AnnualAvg)));
   
+    // Tooltip setup
+    const tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+  
+    svg.selectAll("circle")
+        .data(data)
+        .enter().append("circle")
+        .attr("cx", d => x(d.Year))
+        .attr("cy", d => y(d.AnnualAvg))
+        .attr("r", 3)
+        .attr("fill", "steelblue")
+        .on("mouseover", function(event, d) {
+            tooltip.transition().duration(200).style("opacity", .9);
+            tooltip.html("Year: " + d.Year + "<br/>" + "Avg Temp: " + d.AnnualAvg.toFixed(2))
+                .style("left", (event.pageX + 5) + "px")
+                .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", function(d) {
+            tooltip.transition().duration(500).style("opacity", 0);
+        });
+  
     // Annotations for Scene 2
     svg.append("text")
         .attr("x", x(1940))
         .attr("y", y(0.5))
         .attr("class", "annotation")
-        .text("Significant rise in 1940s");
+        .text("Significant rise in 1940s")
+        .on("click", function() {
+            alert("Detailed information about the 1940s temperature rise.");
+        });
   
     // Scene 3: Impact of temperature rise on different regions
     const scene3 = d3.select("#scene-3");
@@ -82,5 +107,56 @@ d3.csv("global_temperature.csv").then(function(data) {
     // Add more visualizations and interactions for Scene 3 as needed
   
     // Add triggers and interactions for user exploration
+  
+    // Slider for filtering data
+    const yearSlider = document.getElementById('yearSlider');
+    const yearValue = document.getElementById('yearValue');
+  
+    yearSlider.addEventListener('input', function() {
+        yearValue.innerHTML = this.value;
+        const filteredData = data.filter(d => d.Year <= this.value);
+        updateChart(filteredData);
+    });
+  
+    function updateChart(filteredData) {
+        // Update the line path
+        svg.select("path")
+            .datum(filteredData)
+            .attr("d", d3.line()
+                .x(d => x(d.Year))
+                .y(d => y(d.AnnualAvg)));
+  
+        // Update the circles
+        const circles = svg.selectAll("circle")
+            .data(filteredData);
+  
+        circles.enter().append("circle")
+            .merge(circles)
+            .attr("cx", d => x(d.Year))
+            .attr("cy", d => y(d.AnnualAvg))
+            .attr("r", 3)
+            .attr("fill", "steelblue");
+  
+        circles.exit().remove();
+    }
+  });
+  
+  // Button events for scene navigation
+  document.getElementById('scene1-button').addEventListener('click', function() {
+      d3.select("#scene-1").style("display", "block");
+      d3.select("#scene-2").style("display", "none");
+      d3.select("#scene-3").style("display", "none");
+  });
+  
+  document.getElementById('scene2-button').addEventListener('click', function() {
+      d3.select("#scene-1").style("display", "none");
+      d3.select("#scene-2").style("display", "block");
+      d3.select("#scene-3").style("display", "none");
+  });
+  
+  document.getElementById('scene3-button').addEventListener('click', function() {
+      d3.select("#scene-1").style("display", "none");
+      d3.select("#scene-2").style("display", "none");
+      d3.select("#scene-3").style("display", "block");
   });
   

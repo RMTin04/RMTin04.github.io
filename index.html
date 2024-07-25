@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Temperature Visualization</title>
     <style>
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            width: 60px;
+            height: 28px;
+            padding: 2px;
+            font: 12px sans-serif;
+            background: lightsteelblue;
+            border: 0px;
+            border-radius: 8px;
+            pointer-events: none;
+        }
         .annotation {
             fill: red;
             font-size: 12px;
@@ -16,6 +28,13 @@
     <div id="scene-1"></div>
     <div id="scene-2"></div>
     <div id="scene-3"></div>
+
+    <button id="scene1-button">Scene 1</button>
+    <button id="scene2-button">Scene 2</button>
+    <button id="scene3-button">Scene 3</button>
+
+    <input type="range" min="1880" max="2023" value="2023" id="yearSlider">
+    <p>Year: <span id="yearValue">2023</span></p>
 
     <!-- Include D3.js from a CDN -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
