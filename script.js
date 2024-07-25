@@ -15,12 +15,16 @@ d3.csv("global_temperature.csv").then(function(data) {
       d.Nov = +d.Nov;
       d.Dec = +d.Dec;
   
-      // Calculate annual average
-      d.AnnualAvg = (d.Jan + d.Feb + d.Mar + d.Apr + d.May + d.Jun + d.Jul + d.Aug + d.Sep + d.Oct + d.Nov + d.Dec) / 12;
+      // Calculate annual average, ignoring NaN values
+      const monthlyTemps = [d.Jan, d.Feb, d.Mar, d.Apr, d.May, d.Jun, d.Jul, d.Aug, d.Sep, d.Oct, d.Nov, d.Dec];
+      const validTemps = monthlyTemps.filter(t => !isNaN(t));
+      d.AnnualAvg = d3.mean(validTemps);
     });
   
     // Filter out rows with missing data
     data = data.filter(d => !isNaN(d.AnnualAvg));
+  
+    console.log("Parsed Data:", data); // Check the parsed data in the console
   
     // Scene 1: Introduction to global temperatures
     const scene1 = d3.select("#scene-1");
