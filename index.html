@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Global Temperature Visualization with Regions</title>
+    <title>Interactive Global Temperature Visualization</title>
     <style>
         .tooltip {
             position: absolute;
@@ -17,33 +17,12 @@
             border-radius: 8px;
             pointer-events: none;
         }
-        .annotation {
-            fill: red;
-            font-size: 12px;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
-    <div id="scene-1"></div>
-    <div id="scene-2"></div>
-    <div id="scene-3"></div>
-
-    <button id="scene1-button">Scene 1</button>
-    <button id="scene2-button">Scene 2</button>
-    <button id="scene3-button">Scene 3</button>
-
+    <div id="chart"></div>
     <input type="range" min="1880" max="2023" value="2023" id="yearSlider">
     <p>Year: <span id="yearValue">2023</span></p>
-    
-    <label for="regionSelector">Select Region:</label>
-    <select id="regionSelector">
-        <option value="Global">Global</option>
-        <option value="Region1">Region 1</option>
-        <option value="Region2">Region 2</option>
-        <option value="Region3">Region 3</option>
-    </select>
-
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
         d3.csv("global_temperature_regions.csv").then(function(data) {
@@ -55,16 +34,11 @@
                 d.Region3 = +d.Region3;
             });
 
-            const scene1 = d3.select("#scene-1");
-            scene1.append("h2").text("Global Temperature Rise");
-            scene1.append("p").text("An overview of the rise in global temperatures over the past century.");
-
-            const scene2 = d3.select("#scene-2");
             const margin = {top: 20, right: 30, bottom: 30, left: 40},
                   width = 800 - margin.left - margin.right,
                   height = 400 - margin.top - margin.bottom;
 
-            const svg = scene2.append("svg")
+            const svg = d3.select("#chart").append("svg")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
               .append("g")
@@ -83,7 +57,6 @@
                 .call(d3.axisBottom(x));
 
             svg.append("g")
-                .attr("class", "y axis")
                 .call(d3.axisLeft(y));
 
             const line = svg.append("path")
@@ -91,6 +64,7 @@
                 .attr("fill", "none")
                 .attr("stroke", "steelblue")
                 .attr("stroke-width", 1.5)
+                .attr("class", "line")
                 .attr("d", d3.line()
                     .x(d => x(d.Year))
                     .y(d => y(d.Global))
@@ -117,36 +91,18 @@
                     tooltip.transition().duration(500).style("opacity", 0);
                 });
 
-            svg.append("text")
-                .attr("x", x(1940))
-                .attr("y", y(0.5))
-                .attr("class", "annotation")
-                .text("Significant rise in 1940s")
-                .on("click", function() {
-                    alert("Detailed information about the 1940s temperature rise.");
-                });
-
-            const scene3 = d3.select("#scene-3");
-            scene3.append("h2").text("Impact on Different Regions");
-            scene3.append("p").text("Explore the detailed data points for different regions.");
-
             const yearSlider = document.getElementById('yearSlider');
             const yearValue = document.getElementById('yearValue');
 
             yearSlider.addEventListener('input', function() {
                 yearValue.innerHTML = this.value;
                 const filteredData = data.filter(d => d.Year <= this.value);
-                updateChart(filteredData, regionSelector.value);
+                updateChart(filteredData);
             });
 
-            const regionSelector = document.getElementById('regionSelector');
-            regionSelector.addEventListener('change', function() {
-                updateChart(data.filter(d => d.Year <= yearSlider.value), this.value);
-            });
-
-            function updateChart(filteredData, region) {
-                // Update the y-domain based on the selected region
-                y.domain([d3.min(filteredData, d => d[region]), d3.max(filteredData, d => d[region])]);
+            function updateChart(filteredData) {
+                // Update the y-domain based on the filtered data
+                y.domain([d3.min(filteredData, d => d.Global), d3.max(filteredData, d => d.Global)]);
 
                 // Update the y-axis
                 svg.select(".y.axis")
@@ -156,7 +112,7 @@
                 line.datum(filteredData)
                     .attr("d", d3.line()
                         .x(d => x(d.Year))
-                        .y(d => y(d[region])));
+                        .y(d => y(d.Global)));
 
                 // Remove old circles
                 svg.selectAll("circle").remove();
@@ -166,12 +122,12 @@
                     .data(filteredData)
                     .enter().append("circle")
                     .attr("cx", d => x(d.Year))
-                    .attr("cy", d => y(d[region]))
+                    .attr("cy", d => y(d.Global))
                     .attr("r", 3)
                     .attr("fill", "steelblue")
                     .on("mouseover", function(event, d) {
                         tooltip.transition().duration(200).style("opacity", .9);
-                        tooltip.html("Year: " + d.Year + "<br/>" + "Avg Temp: " + d[region].toFixed(2))
+                        tooltip.html("Year: " + d.Year + "<br/>" + "Avg Temp: " + d.Global.toFixed(2))
                             .style("left", (event.pageX + 5) + "px")
                             .style("top", (event.pageY - 28) + "px");
                     })
@@ -181,25 +137,7 @@
             }
 
             // Initial chart setup
-            updateChart(data, 'Global');
-        });
-
-        document.getElementById('scene1-button').addEventListener('click', function() {
-            d3.select("#scene-1").style("display", "block");
-            d3.select("#scene-2").style("display", "none");
-            d3.select("#scene-3").style("display", "none");
-        });
-
-        document.getElementById('scene2-button').addEventListener('click', function() {
-            d3.select("#scene-1").style("display", "none");
-            d3.select("#scene-2").style("display", "block");
-            d3.select("#scene-3").style("display", "none");
-        });
-
-        document.getElementById('scene3-button').addEventListener('click', function() {
-            d3.select("#scene-1").style("display", "none");
-            d3.select("#scene-2").style("display", "none");
-            d3.select("#scene-3").style("display", "block");
+            updateChart(data);
         });
     </script>
 </body>
