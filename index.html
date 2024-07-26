@@ -86,7 +86,7 @@
                 .attr("class", "y axis")
                 .call(d3.axisLeft(y));
 
-            const line = svg.append("path")
+            svg.append("path")
                 .datum(data)
                 .attr("fill", "none")
                 .attr("stroke", "steelblue")
@@ -104,7 +104,7 @@
                 .data(data)
                 .enter().append("circle")
                 .attr("cx", d => x(d.Year))
-                .attr("cy", d => y(d.Global))
+                .attr("cy", d => y(d.Global)) // Initially use 'Global'
                 .attr("r", 3)
                 .attr("fill", "steelblue")
                 .on("mouseover", function(event, d) {
@@ -147,24 +147,24 @@
             function updateChart(filteredData, region) {
                 // Update the y-domain based on the selected region
                 y.domain([d3.min(filteredData, d => d[region]), d3.max(filteredData, d => d[region])]);
-
+                
                 // Update the y-axis
                 svg.select(".y.axis")
                     .call(d3.axisLeft(y));
-
+                
                 // Update the line path
-                line.datum(filteredData)
+                svg.select("path")
+                    .datum(filteredData)
                     .attr("d", d3.line()
                         .x(d => x(d.Year))
                         .y(d => y(d[region])));
-
-                // Remove old circles
-                svg.selectAll("circle").remove();
-
-                // Add new circles
-                svg.selectAll("circle")
-                    .data(filteredData)
-                    .enter().append("circle")
+            
+                // Update the circles
+                const circles = svg.selectAll("circle")
+                    .data(filteredData);
+            
+                circles.enter().append("circle")
+                    .merge(circles)
                     .attr("cx", d => x(d.Year))
                     .attr("cy", d => y(d[region]))
                     .attr("r", 3)
@@ -178,6 +178,8 @@
                     .on("mouseout", function() {
                         tooltip.transition().duration(500).style("opacity", 0);
                     });
+            
+                circles.exit().remove();
             }
 
             // Initial chart setup
