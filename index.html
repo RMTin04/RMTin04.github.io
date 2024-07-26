@@ -100,28 +100,22 @@
                 .attr("class", "tooltip")
                 .style("opacity", 0);
 
-            function createCircles(filteredData, region) {
-                const circles = svg.selectAll("circle")
-                    .data(filteredData);
-
-                circles.enter().append("circle")
-                    .merge(circles)
-                    .attr("cx", d => x(d.Year))
-                    .attr("cy", d => y(d[region]))
-                    .attr("r", 3)
-                    .attr("fill", "steelblue")
-                    .on("mouseover", function(event, d) {
-                        tooltip.transition().duration(200).style("opacity", .9);
-                        tooltip.html("Year: " + d.Year + "<br/>" + "Avg Temp: " + d[region].toFixed(2))
-                            .style("left", (event.pageX + 5) + "px")
-                            .style("top", (event.pageY - 28) + "px");
-                    })
-                    .on("mouseout", function() {
-                        tooltip.transition().duration(500).style("opacity", 0);
-                    });
-
-                circles.exit().remove();
-            }
+            svg.selectAll("circle")
+                .data(data)
+                .enter().append("circle")
+                .attr("cx", d => x(d.Year))
+                .attr("cy", d => y(d.Global))
+                .attr("r", 3)
+                .attr("fill", "steelblue")
+                .on("mouseover", function(event, d) {
+                    tooltip.transition().duration(200).style("opacity", .9);
+                    tooltip.html("Year: " + d.Year + "<br/>" + "Avg Temp: " + d.Global.toFixed(2))
+                        .style("left", (event.pageX + 5) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                })
+                .on("mouseout", function() {
+                    tooltip.transition().duration(500).style("opacity", 0);
+                });
 
             svg.append("text")
                 .attr("x", x(1940))
@@ -153,19 +147,37 @@
             function updateChart(filteredData, region) {
                 // Update the y-domain based on the selected region
                 y.domain([d3.min(filteredData, d => d[region]), d3.max(filteredData, d => d[region])]);
-                
+
                 // Update the y-axis
                 svg.select(".y.axis")
                     .call(d3.axisLeft(y));
-                
+
                 // Update the line path
                 line.datum(filteredData)
                     .attr("d", d3.line()
                         .x(d => x(d.Year))
                         .y(d => y(d[region])));
-            
-                // Update the circles
-                createCircles(filteredData, region);
+
+                // Remove old circles
+                svg.selectAll("circle").remove();
+
+                // Add new circles
+                svg.selectAll("circle")
+                    .data(filteredData)
+                    .enter().append("circle")
+                    .attr("cx", d => x(d.Year))
+                    .attr("cy", d => y(d[region]))
+                    .attr("r", 3)
+                    .attr("fill", "steelblue")
+                    .on("mouseover", function(event, d) {
+                        tooltip.transition().duration(200).style("opacity", .9);
+                        tooltip.html("Year: " + d.Year + "<br/>" + "Avg Temp: " + d[region].toFixed(2))
+                            .style("left", (event.pageX + 5) + "px")
+                            .style("top", (event.pageY - 28) + "px");
+                    })
+                    .on("mouseout", function() {
+                        tooltip.transition().duration(500).style("opacity", 0);
+                    });
             }
 
             // Initial chart setup
