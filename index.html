@@ -8,9 +8,9 @@
         .tooltip {
             position: absolute;
             text-align: center;
-            width: 120px;
-            height: auto;
-            padding: 5px;
+            width: 80px;
+            height: 28px;
+            padding: 2px;
             font: 12px sans-serif;
             background: lightsteelblue;
             border: 0px;
@@ -168,16 +168,7 @@
                     .attr("cx", d => x(d.Year))
                     .attr("cy", d => y(d[region]))
                     .attr("r", 3)
-                    .attr("fill", "steelblue")
-                    .on("mouseover", function(event, d) {
-                        tooltip.transition().duration(200).style("opacity", .9);
-                        tooltip.html("Year: " + d.Year + "<br/>" + "Avg Temp: " + d[region].toFixed(2))
-                            .style("left", (event.pageX + 5) + "px")
-                            .style("top", (event.pageY - 28) + "px");
-                    })
-                    .on("mouseout", function() {
-                        tooltip.transition().duration(500).style("opacity", 0);
-                    });
+                    .attr("fill", "steelblue");
             
                 circles.exit().remove();
             }
