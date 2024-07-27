@@ -256,11 +256,11 @@
             });
 
             function updateChart(filteredData) {
-                svg2.select("path")
-                    .datum(filteredData)
+                line.datum(filteredData)
                     .attr("d", d3.line()
                         .x(d => x2(d.Year))
-                        .y(d => y2(d.AnnualAvg)));
+                        .y(d => y2(d.AnnualAvg))
+                    );
 
                 const circles = svg2.selectAll("circle")
                     .data(filteredData);
