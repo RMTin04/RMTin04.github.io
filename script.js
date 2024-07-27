@@ -67,7 +67,6 @@ d3.csv("global_temperature.csv").then(function(data) {
             .x(d => x(d.Year))
             .y(d => y(d.AnnualAvg)));
   
-    // Tooltip setup
     const tooltip = d3.select("body").append("div")
         .attr("class", "tooltip")
         .style("opacity", 0);
@@ -89,7 +88,6 @@ d3.csv("global_temperature.csv").then(function(data) {
             tooltip.transition().duration(500).style("opacity", 0);
         });
   
-    // Annotations for Scene 2
     svg.append("text")
         .attr("x", x(1940))
         .attr("y", y(0.5))
@@ -99,16 +97,10 @@ d3.csv("global_temperature.csv").then(function(data) {
             alert("Detailed information about the 1940s temperature rise.");
         });
   
-    // Scene 3: Impact of temperature rise on different regions
     const scene3 = d3.select("#scene-3");
     scene3.append("h2").text("Impact on Different Regions");
     scene3.append("p").text("Explore the detailed data points for different regions.");
     
-    // Add more visualizations and interactions for Scene 3 as needed
-  
-    // Add triggers and interactions for user exploration
-  
-    // Slider for filtering data
     const yearSlider = document.getElementById('yearSlider');
     const yearValue = document.getElementById('yearValue');
   
