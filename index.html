@@ -56,6 +56,7 @@
     <input type="range" min="1880" max="2023" value="1880" id="yearSlider">
     <p>Year: <span id="yearValue">1880</span></p>
 
+    <!-- Include D3.js from a CDN -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
         d3.csv("global_temperature.csv").then(function(data) {
@@ -144,7 +145,7 @@
             const scene2 = d3.select("#scene-2");
 
             scene2.append("h2").text("Global Temperature Rise");
-            scene2.append("p").attr("class", "overview").text("Use the slider to display more information on the graph! As you slide your year to the right, notice a trend in the data? Feel free to click on one of the data points to display the year more specifically.");
+            scene2.append("p").attr("class", "overview").text("Use the slider to display more information on the graph! As you slide your year to the right, notice a trend in the data? Feel free to click on one of the data points to display the year more specifically. ");
 
             const svg2 = scene2.append("svg")
                 .attr("width", width + margin.left + margin.right)
@@ -167,16 +168,6 @@
 
             svg2.append("g")
                 .call(d3.axisLeft(y2));
-
-
-            svg2.append("text")
-                .attr("x", x(1940))
-                .attr("y", y(0.5))
-                .attr("class", "annotation")
-                .text("Significant rise in 1940s")
-                .on("click", function() {
-                    alert("Detailed information about the 1940s temperature rise.");
-                });
 
             const line = svg2.append("path")
                 .datum(data)
