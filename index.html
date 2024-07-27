@@ -168,9 +168,8 @@
                     .attr("cx", d => x(d.Year))
                     .attr("cy", d => y(d.AnnualAvg))
                     .attr("r", 3)
-                    .attr("fill", "steelblue");
-
-                addTooltip(circles);
+                    .attr("fill", "steelblue")
+                    .call(addTooltip);
 
                 circles.exit().remove();
             }
