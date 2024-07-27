@@ -25,6 +25,11 @@
         #scene-2, #scene-3 {
             display: none;
         }
+        .overview {
+            margin: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
@@ -65,44 +70,95 @@
 
             data = data.filter(d => !isNaN(d.AnnualAvg));
 
+            // Aggregate data by decade
+            const decadeData = [];
+            const decadeMap = new Map();
+
+            data.forEach(d => {
+                const decade = Math.floor(d.Year / 10) * 10;
+                if (!decadeMap.has(decade)) {
+                    decadeMap.set(decade, []);
+                }
+                decadeMap.get(decade).push(d.AnnualAvg);
+            });
+
+            decadeMap.forEach((temps, decade) => {
+                decadeData.push({
+                    decade: decade,
+                    avgTemp: d3.mean(temps)
+                });
+            });
+
             const scene1 = d3.select("#scene-1");
             scene1.append("h2").text("Global Temperature Rise");
-            scene1.append("p").text("An overview of the rise in global temperatures over the past century.");
+            scene1.append("p").attr("class", "overview").text("An overview of the rise in global temperatures over the past century.");
 
-            const scene2 = d3.select("#scene-2");
             const margin = {top: 20, right: 30, bottom: 30, left: 40},
                   width = 800 - margin.left - margin.right,
                   height = 400 - margin.top - margin.bottom;
 
-            const svg = scene2.append("svg")
+            const svg1 = scene1.append("svg")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
               .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-            const x = d3.scaleLinear()
+            const x1 = d3.scaleBand()
+                .domain(decadeData.map(d => d.decade))
+                .range([0, width])
+                .padding(0.1);
+
+            const y1 = d3.scaleLinear()
+                .domain([d3.min(decadeData, d => d.avgTemp), d3.max(decadeData, d => d.avgTemp)])
+                .range([height, 0]);
+
+            svg1.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x1).tickFormat(d3.format("d")));
+
+            svg1.append("g")
+                .call(d3.axisLeft(y1));
+
+            svg1.selectAll(".bar")
+                .data(decadeData)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", d => x1(d.decade))
+                .attr("y", d => y1(d.avgTemp))
+                .attr("width", x1.bandwidth())
+                .attr("height", d => height - y1(d.avgTemp))
+                .attr("fill", "steelblue");
+
+            const scene2 = d3.select("#scene-2");
+            const svg2 = scene2.append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+              .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            const x2 = d3.scaleLinear()
                 .domain(d3.extent(data, d => d.Year))
                 .range([0, width]);
 
-            const y = d3.scaleLinear()
+            const y2 = d3.scaleLinear()
                 .domain([d3.min(data, d => d.AnnualAvg), d3.max(data, d => d.AnnualAvg)])
                 .range([height, 0]);
 
-            svg.append("g")
+            svg2.append("g")
                 .attr("transform", "translate(0," + height + ")")
-                .call(d3.axisBottom(x));
+                .call(d3.axisBottom(x2));
 
-            svg.append("g")
-                .call(d3.axisLeft(y));
+            svg2.append("g")
+                .call(d3.axisLeft(y2));
 
-            const line = svg.append("path")
+            const line = svg2.append("path")
                 .datum(data)
                 .attr("fill", "none")
                 .attr("stroke", "steelblue")
                 .attr("stroke-width", 1.5)
                 .attr("d", d3.line()
-                    .x(d => x(d.Year))
-                    .y(d => y(d.AnnualAvg))
+                    .x(d => x2(d.Year))
+                    .y(d => y2(d.AnnualAvg))
                 );
 
             const tooltip = d3.select("body").append("div")
@@ -121,19 +177,19 @@
                 });
             }
 
-            const circles = svg.selectAll("circle")
+            const circles = svg2.selectAll("circle")
                 .data(data)
                 .enter().append("circle")
-                .attr("cx", d => x(d.Year))
-                .attr("cy", d => y(d.AnnualAvg))
+                .attr("cx", d => x2(d.Year))
+                .attr("cy", d => y2(d.AnnualAvg))
                 .attr("r", 3)
                 .attr("fill", "steelblue");
 
             addTooltip(circles);
 
-            svg.append("text")
-                .attr("x", x(1940))
-                .attr("y", y(0.5))
+            svg2.append("text")
+                .attr("x", x2(1940))
+                .attr("y", y2(0.5))
                 .attr("class", "annotation")
                 .text("Significant rise in 1940s")
                 .on("click", function() {
@@ -156,41 +212,42 @@
             function updateChart(filteredData) {
                 line.datum(filteredData)
                     .attr("d", d3.line()
-                        .x(d => x(d.Year))
-                        .y(d => y(d.AnnualAvg))
+                        .x(d => x2(d.Year))
+                        .y(d => y2(d.AnnualAvg))
                     );
 
-                const circles = svg.selectAll("circle")
+                const circles = svg2.selectAll("circle")
                     .data(filteredData);
 
                 circles.enter().append("circle")
                     .merge(circles)
-                    .attr("cx", d => x(d.Year))
-                    .attr("cy", d => y(d.AnnualAvg))
+                    .attr("cx", d => x2(d.Year))
+                    .attr("cy", d => y2(d.AnnualAvg))
                     .attr("r", 3)
-                    .attr("fill", "steelblue")
-                    .call(addTooltip);
+                    .attr("fill", "steelblue");
 
                 circles.exit().remove();
+
+                addTooltip(svg2.selectAll("circle"));
             }
-        });
 
-        document.getElementById('scene1-button').addEventListener('click', function() {
-            d3.select("#scene-1").style("display", "block");
-            d3.select("#scene-2").style("display", "none");
-            d3.select("#scene-3").style("display", "none");
-        });
+            document.getElementById('scene1-button').addEventListener('click', function() {
+                d3.select("#scene-1").style("display", "block");
+                d3.select("#scene-2").style("display", "none");
+                d3.select("#scene-3").style("display", "none");
+            });
 
-        document.getElementById('scene2-button').addEventListener('click', function() {
-            d3.select("#scene-1").style("display", "none");
-            d3.select("#scene-2").style("display", "block");
-            d3.select("#scene-3").style("display", "none");
-        });
+            document.getElementById('scene2-button').addEventListener('click', function() {
+                d3.select("#scene-1").style("display", "none");
+                d3.select("#scene-2").style("display", "block");
+                d3.select("#scene-3").style("display", "none");
+            });
 
-        document.getElementById('scene3-button').addEventListener('click', function() {
-            d3.select("#scene-1").style("display", "none");
-            d3.select("#scene-2").style("display", "none");
-            d3.select("#scene-3").style("display", "block");
+            document.getElementById('scene3-button').addEventListener('click', function() {
+                d3.select("#scene-1").style("display", "none");
+                d3.select("#scene-2").style("display", "none");
+                d3.select("#scene-3").style("display", "block");
+            });
         });
     </script>
 </body>
