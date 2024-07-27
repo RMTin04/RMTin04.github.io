@@ -30,6 +30,18 @@
             font-size: 14px;
             line-height: 1.6;
         }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
     </style>
 </head>
 <body>
@@ -110,7 +122,7 @@
 
             const y1 = d3.scaleLinear()
                 .domain([d3.min(decadeData, d => d.avgTemp), d3.max(decadeData, d => d.avgTemp)])
-                .nice() // Adjust domain to add a bit of padding
+                .nice()
                 .range([height, 0]);
 
             svg1.append("g")
@@ -179,28 +191,60 @@
                 });
             }
 
+            function updateTable(selectedData) {
+                const scene3 = d3.select("#scene-3");
+                scene3.selectAll("table").remove();
+
+                const table = scene3.append("table");
+                const thead = table.append("thead");
+                const tbody = table.append("tbody");
+
+                thead.append("tr")
+                    .selectAll("th")
+                    .data(["Month", "Temperature"])
+                    .enter().append("th")
+                    .text(d => d);
+
+                const rows = tbody.selectAll("tr")
+                    .data(selectedData)
+                    .enter().append("tr");
+
+                rows.selectAll("td")
+                    .data(d => [d.month, d.temp])
+                    .enter().append("td")
+                    .text(d => d);
+            }
+
             const circles = svg2.selectAll("circle")
                 .data(data)
                 .enter().append("circle")
                 .attr("cx", d => x2(d.Year))
                 .attr("cy", d => y2(d.AnnualAvg))
-                .attr("r", 3)
-                .attr("fill", "steelblue");
-
-            addTooltip(circles);
-
-            svg2.append("text")
-                .attr("x", x2(1940))
-                .attr("y", y2(0.5))
-                .attr("class", "annotation")
-                .text("Significant rise in 1940s")
-                .on("click", function() {
-                    alert("Detailed information about the 1940s temperature rise.");
+                .attr("r", 5)
+                .attr("fill", "steelblue")
+                .on("click", function(event, d) {
+                    const selectedYearData = data.find(dataPoint => dataPoint.Year === d.Year);
+                    const monthTemps = [
+                        { month: "Jan", temp: selectedYearData.Jan },
+                        { month: "Feb", temp: selectedYearData.Feb },
+                        { month: "Mar", temp: selectedYearData.Mar },
+                        { month: "Apr", temp: selectedYearData.Apr },
+                        { month: "May", temp: selectedYearData.May },
+                        { month: "Jun", temp: selectedYearData.Jun },
+                        { month: "Jul", temp: selectedYearData.Jul },
+                        { month: "Aug", temp: selectedYearData.Aug },
+                        { month: "Sep", temp: selectedYearData.Sep },
+                        { month: "Oct", temp: selectedYearData.Oct },
+                        { month: "Nov", temp: selectedYearData.Nov },
+                        { month: "Dec", temp: selectedYearData.Dec }
+                    ];
+                    updateTable(monthTemps);
+                    d3.select("#scene-1").style("display", "none");
+                    d3.select("#scene-2").style("display", "none");
+                    d3.select("#scene-3").style("display", "block");
                 });
 
-            const scene3 = d3.select("#scene-3");
-            scene3.append("h2").text("Impact on Different Regions");
-            scene3.append("p").text("Explore the detailed data points for different regions.");
+            addTooltip(circles);
 
             const yearSlider = document.getElementById('yearSlider');
             const yearValue = document.getElementById('yearValue');
@@ -212,7 +256,8 @@
             });
 
             function updateChart(filteredData) {
-                line.datum(filteredData)
+                svg2.select("path")
+                    .datum(filteredData)
                     .attr("d", d3.line()
                         .x(d => x2(d.Year))
                         .y(d => y2(d.AnnualAvg)));
@@ -224,7 +269,7 @@
                     .merge(circles)
                     .attr("cx", d => x2(d.Year))
                     .attr("cy", d => y2(d.AnnualAvg))
-                    .attr("r", 3)
+                    .attr("r", 5)
                     .attr("fill", "steelblue");
 
                 circles.exit().remove();
