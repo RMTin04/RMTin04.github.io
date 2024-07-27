@@ -8,9 +8,9 @@
         .tooltip {
             position: absolute;
             text-align: center;
-            width: 120px;
-            height: auto;
-            padding: 5px;
+            width: 60px;
+            height: 28px;
+            padding: 2px;
             font: 12px sans-serif;
             background: lightsteelblue;
             border: 0px;
@@ -36,17 +36,31 @@
     <input type="range" min="1880" max="2023" value="2023" id="yearSlider">
     <p>Year: <span id="yearValue">2023</span></p>
 
+    <!-- Include D3.js from a CDN -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
-        d3.csv("global_temperature_regions.csv").then(function(data) {
-            // Calculate annual averages for each year
+        d3.csv("global_temperature.csv").then(function(data) {
             data.forEach(d => {
                 d.Year = +d.Year;
-                d.Jan = +d.Jan; d.Feb = +d.Feb; d.Mar = +d.Mar; d.Apr = +d.Apr;
-                d.May = +d.May; d.Jun = +d.Jun; d.Jul = +d.Jul; d.Aug = +d.Aug;
-                d.Sep = +d.Sep; d.Oct = +d.Oct; d.Nov = +d.Nov; d.Dec = +d.Dec;
-                d.Annual = (d.Jan + d.Feb + d.Mar + d.Apr + d.May + d.Jun + d.Jul + d.Aug + d.Sep + d.Oct + d.Nov + d.Dec) / 12;
+                d.Jan = +d.Jan;
+                d.Feb = +d.Feb;
+                d.Mar = +d.Mar;
+                d.Apr = +d.Apr;
+                d.May = +d.May;
+                d.Jun = +d.Jun;
+                d.Jul = +d.Jul;
+                d.Aug = +d.Aug;
+                d.Sep = +d.Sep;
+                d.Oct = +d.Oct;
+                d.Nov = +d.Nov;
+                d.Dec = +d.Dec;
+
+                const monthlyTemps = [d.Jan, d.Feb, d.Mar, d.Apr, d.May, d.Jun, d.Jul, d.Aug, d.Sep, d.Oct, d.Nov, d.Dec];
+                const validTemps = monthlyTemps.filter(t => !isNaN(t));
+                d.AnnualAvg = d3.mean(validTemps);
             });
+
+            data = data.filter(d => !isNaN(d.AnnualAvg));
 
             const scene1 = d3.select("#scene-1");
             scene1.append("h2").text("Global Temperature Rise");
@@ -68,7 +82,7 @@
                 .range([0, width]);
 
             const y = d3.scaleLinear()
-                .domain([d3.min(data, d => d.Annual), d3.max(data, d => d.Annual)])
+                .domain([d3.min(data, d => d.AnnualAvg), d3.max(data, d => d.AnnualAvg)])
                 .range([height, 0]);
 
             svg.append("g")
@@ -76,7 +90,6 @@
                 .call(d3.axisBottom(x));
 
             svg.append("g")
-                .attr("class", "y axis")
                 .call(d3.axisLeft(y));
 
             svg.append("path")
@@ -86,7 +99,7 @@
                 .attr("stroke-width", 1.5)
                 .attr("d", d3.line()
                     .x(d => x(d.Year))
-                    .y(d => y(d.Annual))
+                    .y(d => y(d.AnnualAvg))
                 );
 
             const tooltip = d3.select("body").append("div")
@@ -97,12 +110,12 @@
                 .data(data)
                 .enter().append("circle")
                 .attr("cx", d => x(d.Year))
-                .attr("cy", d => y(d.Annual))
+                .attr("cy", d => y(d.AnnualAvg))
                 .attr("r", 3)
                 .attr("fill", "steelblue")
                 .on("mouseover", function(event, d) {
                     tooltip.transition().duration(200).style("opacity", .9);
-                    tooltip.html("Year: " + d.Year + "<br/>" + "Avg Temp: " + d.Annual.toFixed(2))
+                    tooltip.html("Year: " + d.Year + "<br/>" + "Avg Temp: " + d.AnnualAvg.toFixed(2))
                         .style("left", (event.pageX + 5) + "px")
                         .style("top", (event.pageY - 28) + "px");
                 })
@@ -133,45 +146,24 @@
             });
 
             function updateChart(filteredData) {
-                // Update the y-domain based on the filtered data
-                y.domain([d3.min(filteredData, d => d.Annual), d3.max(filteredData, d => d.Annual)]);
-                
-                // Update the y-axis
-                svg.select(".y.axis")
-                    .call(d3.axisLeft(y));
-                
-                // Update the line path
                 svg.select("path")
                     .datum(filteredData)
                     .attr("d", d3.line()
                         .x(d => x(d.Year))
-                        .y(d => y(d.Annual)));
-            
-                // Update the circles
+                        .y(d => y(d.AnnualAvg)));
+
                 const circles = svg.selectAll("circle")
                     .data(filteredData);
-            
+
                 circles.enter().append("circle")
                     .merge(circles)
                     .attr("cx", d => x(d.Year))
-                    .attr("cy", d => y(d.Annual))
+                    .attr("cy", d => y(d.AnnualAvg))
                     .attr("r", 3)
-                    .attr("fill", "steelblue")
-                    .on("mouseover", function(event, d) {
-                        tooltip.transition().duration(200).style("opacity", .9);
-                        tooltip.html("Year: " + d.Year + "<br/>" + "Avg Temp: " + d.Annual.toFixed(2))
-                            .style("left", (event.pageX + 5) + "px")
-                            .style("top", (event.pageY - 28) + "px");
-                    })
-                    .on("mouseout", function() {
-                        tooltip.transition().duration(500).style("opacity", 0);
-                    });
-            
+                    .attr("fill", "steelblue");
+
                 circles.exit().remove();
             }
-
-            // Initial chart setup
-            updateChart(data);
         });
 
         document.getElementById('scene1-button').addEventListener('click', function() {
