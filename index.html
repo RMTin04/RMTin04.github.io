@@ -270,7 +270,28 @@
                     .attr("cx", d => x2(d.Year))
                     .attr("cy", d => y2(d.AnnualAvg))
                     .attr("r", 5)
-                    .attr("fill", "steelblue");
+                    .attr("fill", "steelblue")
+                    .on("click", function(event, d) {
+                        const selectedYearData = data.find(dataPoint => dataPoint.Year === d.Year);
+                        const monthTemps = [
+                            { month: "Jan", temp: selectedYearData.Jan },
+                            { month: "Feb", temp: selectedYearData.Feb },
+                            { month: "Mar", temp: selectedYearData.Mar },
+                            { month: "Apr", temp: selectedYearData.Apr },
+                            { month: "May", temp: selectedYearData.May },
+                            { month: "Jun", temp: selectedYearData.Jun },
+                            { month: "Jul", temp: selectedYearData.Jul },
+                            { month: "Aug", temp: selectedYearData.Aug },
+                            { month: "Sep", temp: selectedYearData.Sep },
+                            { month: "Oct", temp: selectedYearData.Oct },
+                            { month: "Nov", temp: selectedYearData.Nov },
+                            { month: "Dec", temp: selectedYearData.Dec }
+                        ];
+                        updateTable(monthTemps);
+                        d3.select("#scene-1").style("display", "none");
+                        d3.select("#scene-2").style("display", "none");
+                        d3.select("#scene-3").style("display", "block");
+                    });
 
                 circles.exit().remove();
 
