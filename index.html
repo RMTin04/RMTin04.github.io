@@ -93,7 +93,7 @@
             scene1.append("h2").text("Global Temperature Rise");
             scene1.append("p").attr("class", "overview").text("An overview of the rise in global temperatures over the past century.");
 
-            const margin = {top: 20, right: 30, bottom: 30, left: 40},
+            const margin = {top: 20, right: 30, bottom: 40, left: 60},
                   width = 800 - margin.left - margin.right,
                   height = 400 - margin.top - margin.bottom;
 
@@ -110,6 +110,7 @@
 
             const y1 = d3.scaleLinear()
                 .domain([d3.min(decadeData, d => d.avgTemp), d3.max(decadeData, d => d.avgTemp)])
+                .nice() // Adjust domain to add a bit of padding
                 .range([height, 0]);
 
             svg1.append("g")
@@ -142,6 +143,7 @@
 
             const y2 = d3.scaleLinear()
                 .domain([d3.min(data, d => d.AnnualAvg), d3.max(data, d => d.AnnualAvg)])
+                .nice()
                 .range([height, 0]);
 
             svg2.append("g")
@@ -213,8 +215,7 @@
                 line.datum(filteredData)
                     .attr("d", d3.line()
                         .x(d => x2(d.Year))
-                        .y(d => y2(d.AnnualAvg))
-                    );
+                        .y(d => y2(d.AnnualAvg)));
 
                 const circles = svg2.selectAll("circle")
                     .data(filteredData);
