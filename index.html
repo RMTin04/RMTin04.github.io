@@ -49,12 +49,12 @@
     <div id="scene-2"></div>
     <div id="scene-3"></div>
 
-    <button id="scene1-button">Scene 1</button>
-    <button id="scene2-button">Scene 2</button>
-    <button id="scene3-button">Scene 3</button>
+    <button id="scene1-button" disabled>Scene 1</button>
+    <button id="scene2-button" disabled>Scene 2</button>
+    <button id="scene3-button" disabled>Scene 3</button>
 
-    <input type="range" min="1880" max="2023" value="2023" id="yearSlider">
-    <p>Year: <span id="yearValue">2023</span></p>
+    <input type="range" min="1880" max="2023" value="2023" id="yearSlider" style="display:none;">
+    <p>Year: <span id="yearValue" style="display:none;">2023</span></p>
 
     <!-- Include D3.js from a CDN -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -205,55 +205,18 @@
                     .enter().append("th")
                     .text(d => d);
 
+                const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
                 const rows = tbody.selectAll("tr")
-                    .data(selectedData)
+                    .data(months)
                     .enter().append("tr");
 
-                rows.selectAll("td")
-                    .data(d => [d.month, d.temp])
-                    .enter().append("td")
+                rows.append("td")
                     .text(d => d);
+
+                rows.append("td")
+                    .text(d => selectedData[d]);
             }
-
-            const circles = svg2.selectAll("circle")
-                .data(data)
-                .enter().append("circle")
-                .attr("cx", d => x2(d.Year))
-                .attr("cy", d => y2(d.AnnualAvg))
-                .attr("r", 5)
-                .attr("fill", "steelblue")
-                .on("click", function(event, d) {
-                    const selectedYearData = data.find(dataPoint => dataPoint.Year === d.Year);
-                    const monthTemps = [
-                        { month: "Jan", temp: selectedYearData.Jan },
-                        { month: "Feb", temp: selectedYearData.Feb },
-                        { month: "Mar", temp: selectedYearData.Mar },
-                        { month: "Apr", temp: selectedYearData.Apr },
-                        { month: "May", temp: selectedYearData.May },
-                        { month: "Jun", temp: selectedYearData.Jun },
-                        { month: "Jul", temp: selectedYearData.Jul },
-                        { month: "Aug", temp: selectedYearData.Aug },
-                        { month: "Sep", temp: selectedYearData.Sep },
-                        { month: "Oct", temp: selectedYearData.Oct },
-                        { month: "Nov", temp: selectedYearData.Nov },
-                        { month: "Dec", temp: selectedYearData.Dec }
-                    ];
-                    updateTable(monthTemps);
-                    d3.select("#scene-1").style("display", "none");
-                    d3.select("#scene-2").style("display", "none");
-                    d3.select("#scene-3").style("display", "block");
-                });
-
-            addTooltip(circles);
-
-            const yearSlider = document.getElementById('yearSlider');
-            const yearValue = document.getElementById('yearValue');
-
-            yearSlider.addEventListener('input', function() {
-                yearValue.innerHTML = this.value;
-                const filteredData = data.filter(d => d.Year <= this.value);
-                updateChart(filteredData);
-            });
 
             function updateChart(filteredData) {
                 svg2.select("path")
@@ -263,30 +226,46 @@
                         .y(d => y2(d.AnnualAvg)));
 
                 const circles = svg2.selectAll("circle")
-                    .data(filteredData);
+                    .data(filteredData, d => d.Year);
 
                 circles.enter().append("circle")
                     .merge(circles)
                     .attr("cx", d => x2(d.Year))
                     .attr("cy", d => y2(d.AnnualAvg))
-                    .attr("r", 5)
-                    .attr("fill", "steelblue");
+                    .attr("r", 3)
+                    .attr("fill", "steelblue")
+                    .on("click", function(event, d) {
+                        updateTable(d);
+                        document.getElementById('scene3-button').disabled = false;
+                    });
 
                 circles.exit().remove();
 
                 addTooltip(svg2.selectAll("circle"));
             }
 
+            addTooltip(svg2.selectAll("circle"));
+
+            document.getElementById('yearSlider').addEventListener('input', function() {
+                document.getElementById('yearValue').innerHTML = this.value;
+                const filteredData = data.filter(d => d.Year <= this.value);
+                updateChart(filteredData);
+            });
+
             document.getElementById('scene1-button').addEventListener('click', function() {
                 d3.select("#scene-1").style("display", "block");
                 d3.select("#scene-2").style("display", "none");
                 d3.select("#scene-3").style("display", "none");
+                document.getElementById('scene2-button').disabled = false;
             });
 
             document.getElementById('scene2-button').addEventListener('click', function() {
                 d3.select("#scene-1").style("display", "none");
                 d3.select("#scene-2").style("display", "block");
                 d3.select("#scene-3").style("display", "none");
+                document.getElementById('scene3-button').disabled = true;
+                document.getElementById('yearSlider').style.display = 'block';
+                document.getElementById('yearValue').style.display = 'inline';
             });
 
             document.getElementById('scene3-button').addEventListener('click', function() {
@@ -294,6 +273,9 @@
                 d3.select("#scene-2").style("display", "none");
                 d3.select("#scene-3").style("display", "block");
             });
+
+            // Initially display the first scene
+            document.getElementById('scene1-button').click();
         });
     </script>
 </body>
