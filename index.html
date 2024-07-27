@@ -50,11 +50,11 @@
     <div id="scene-3"></div>
 
     <button id="scene1-button">Scene 1</button>
-    <button id="scene2-button" disabled>Scene 2</button>
-    <button id="scene3-button" disabled>Scene 3</button>
+    <button id="scene2-button">Scene 2</button>
+    <button id="scene3-button">Scene 3</button>
 
-    <input type="range" min="1880" max="2023" value="2023" id="yearSlider" style="display:none;">
-    <p>Year: <span id="yearValue" style="display:none;">2023</span></p>
+    <input type="range" min="1880" max="2023" value="2023" id="yearSlider">
+    <p>Year: <span id="yearValue">2023</span></p>
 
     <!-- Include D3.js from a CDN -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -205,17 +205,14 @@
                     .enter().append("th")
                     .text(d => d);
 
-                const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
                 const rows = tbody.selectAll("tr")
-                    .data(months)
+                    .data(selectedData)
                     .enter().append("tr");
 
-                rows.append("td")
+                rows.selectAll("td")
+                    .data(d => [d.month, d.temp])
+                    .enter().append("td")
                     .text(d => d);
-
-                rows.append("td")
-                    .text(d => selectedData[d]);
             }
 
             function updateChart(filteredData) {
@@ -232,12 +229,8 @@
                     .merge(circles)
                     .attr("cx", d => x2(d.Year))
                     .attr("cy", d => y2(d.AnnualAvg))
-                    .attr("r", 3)
-                    .attr("fill", "steelblue")
-                    .on("click", function(event, d) {
-                        updateTable(d);
-                        document.getElementById('scene3-button').disabled = false;
-                    });
+                    .attr("r", 5)
+                    .attr("fill", "steelblue");
 
                 circles.exit().remove();
 
@@ -256,16 +249,12 @@
                 d3.select("#scene-1").style("display", "block");
                 d3.select("#scene-2").style("display", "none");
                 d3.select("#scene-3").style("display", "none");
-                document.getElementById('scene2-button').disabled = false;
             });
 
             document.getElementById('scene2-button').addEventListener('click', function() {
                 d3.select("#scene-1").style("display", "none");
                 d3.select("#scene-2").style("display", "block");
                 d3.select("#scene-3").style("display", "none");
-                document.getElementById('scene3-button').disabled = true;
-                document.getElementById('yearSlider').style.display = 'block';
-                document.getElementById('yearValue').style.display = 'inline';
             });
 
             document.getElementById('scene3-button').addEventListener('click', function() {
@@ -273,9 +262,6 @@
                 d3.select("#scene-2").style("display", "none");
                 d3.select("#scene-3").style("display", "block");
             });
-
-            // Initially display the first scene
-            document.getElementById('scene1-button').click();
         });
     </script>
 </body>
