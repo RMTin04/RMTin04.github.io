@@ -50,16 +50,20 @@
     <div id="scene-2"></div>
     <div id="scene-3"></div>
 
+    <!-- adding the navigation buttons-->
     <button id="scene1-button">Scene 1</button>
     <button id="scene2-button">Scene 2</button>
     <button id="scene3-button">Scene 3</button>
 
+
+    <!-- adding the slider-->
     <input type="range" min="1880" max="2023" value="1880" id="yearSlider">
     <p>Year: <span id="yearValue">1880</span></p>
 
     <!-- Include D3.js from a CDN -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
+        //calculating the averages 
         d3.csv("global_temperature.csv").then(function(data) {
             data.forEach(d => {
                 d.Year = +d.Year;
@@ -105,6 +109,7 @@
                 });
             });
 
+            //text
             const scene1 = d3.select("#scene-1");
             scene1.append("h2").text("Global Temperature Rise");
             scene1.append("p").attr("class", "overview").text("Scene 1, Hello everyone, my name is Rachel and here is my final project. I chose to inform you all about the very realness of climate change. The data provided below is from NASA GISS, and displays the temperature anomoly data from 1880 till now.");
@@ -146,11 +151,13 @@
                 .attr("height", d => height - y1(d.avgTemp))
                 .attr("fill", "steelblue");
 
+
+            //start of scene 2
             const scene2 = d3.select("#scene-2");
 
             scene2.append("h2").text("Global Temperature Rise");
             scene2.append("p").attr("class", "overview").text("Use the slider to display more information on the graph! As you slide your year to the right, notice a trend in the data? Feel free to click on one of the data points to display the year more specifically. ");
-
+            
             const svg2 = scene2.append("svg")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
@@ -200,8 +207,14 @@
             }
 
             function updateTable(selectedData) {
+
+                //scene 3 !!
                 const scene3 = d3.select("#scene-3");
                 scene3.selectAll("table").remove();
+
+                scene3.append("h2").text("Global Temperature Rise");
+                scene3.append("p").attr("class", "overview").text("Here is a table displaying the monthly values for the year you selected! As you can tell, there might not be a noticeable change on the month to month basis. ");
+            
 
                 const table = scene3.append("table");
                 const thead = table.append("thead");
@@ -223,6 +236,7 @@
                     .text(d => d);
             }
 
+            //adjusting the points
             const circles = svg2.selectAll("circle")
                 .data(data)
                 .enter().append("circle")
@@ -251,7 +265,8 @@
                     d3.select("#scene-2").style("display", "none");
                     d3.select("#scene-3").style("display", "block");
                 });
-
+            
+            //TOOLTIPS FOR THE CIRCLES
             addTooltip(circles);
 
             const yearSlider = document.getElementById('yearSlider');
