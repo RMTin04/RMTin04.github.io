@@ -103,7 +103,7 @@
 
             const scene1 = d3.select("#scene-1");
             scene1.append("h2").text("Global Temperature Rise");
-            scene1.append("p").attr("class", "overview").text("Scene 1, Hello everyone, my name is Rachel and here is my final project. I chose to inform you all about the very realness of climate change.");
+            scene1.append("p").attr("class", "overview").text("Scene 1, Hello everyone, my name is Rachel and here is my final project. I chose to inform you all about the very realness of climate change. The data provided below is from NASA GISS, and displays the temperature anomoly data from 1880 till now.");
 
             const margin = {top: 20, right: 30, bottom: 40, left: 60},
                   width = 800 - margin.left - margin.right,
@@ -143,6 +143,10 @@
                 .attr("fill", "steelblue");
 
             const scene2 = d3.select("#scene-2");
+
+            scene2.append("h2").text("Global Temperature Rise");
+            scene2.append("p").attr("class", "overview").text("test");
+
             const svg2 = scene2.append("svg")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
