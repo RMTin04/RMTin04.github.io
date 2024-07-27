@@ -95,7 +95,7 @@
             svg.append("g")
                 .call(d3.axisLeft(y));
 
-            svg.append("path")
+            const line = svg.append("path")
                 .datum(data)
                 .attr("fill", "none")
                 .attr("stroke", "steelblue")
@@ -109,14 +109,8 @@
                 .attr("class", "tooltip")
                 .style("opacity", 0);
 
-            svg.selectAll("circle")
-                .data(data)
-                .enter().append("circle")
-                .attr("cx", d => x(d.Year))
-                .attr("cy", d => y(d.AnnualAvg))
-                .attr("r", 3)
-                .attr("fill", "steelblue")
-                .on("mouseover", function(event, d) {
+            function addTooltip(selection) {
+                selection.on("mouseover", function(event, d) {
                     tooltip.transition().duration(200).style("opacity", .9);
                     tooltip.html("Year: " + d.Year + "<br/>" + "Avg Temp: " + d.AnnualAvg.toFixed(2))
                         .style("left", (event.pageX + 5) + "px")
@@ -125,6 +119,17 @@
                 .on("mouseout", function() {
                     tooltip.transition().duration(500).style("opacity", 0);
                 });
+            }
+
+            const circles = svg.selectAll("circle")
+                .data(data)
+                .enter().append("circle")
+                .attr("cx", d => x(d.Year))
+                .attr("cy", d => y(d.AnnualAvg))
+                .attr("r", 3)
+                .attr("fill", "steelblue");
+
+            addTooltip(circles);
 
             svg.append("text")
                 .attr("x", x(1940))
@@ -149,11 +154,11 @@
             });
 
             function updateChart(filteredData) {
-                svg.select("path")
-                    .datum(filteredData)
+                line.datum(filteredData)
                     .attr("d", d3.line()
                         .x(d => x(d.Year))
-                        .y(d => y(d.AnnualAvg)));
+                        .y(d => y(d.AnnualAvg))
+                    );
 
                 const circles = svg.selectAll("circle")
                     .data(filteredData);
@@ -164,6 +169,8 @@
                     .attr("cy", d => y(d.AnnualAvg))
                     .attr("r", 3)
                     .attr("fill", "steelblue");
+
+                addTooltip(circles);
 
                 circles.exit().remove();
             }
