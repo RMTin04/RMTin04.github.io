@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Global Temperature Visualization</title>
+    <!-- from my first css-->
     <style>
         .tooltip {
             position: absolute;
@@ -75,14 +76,15 @@
                 d.Nov = +d.Nov;
                 d.Dec = +d.Dec;
 
+
                 const monthlyTemps = [d.Jan, d.Feb, d.Mar, d.Apr, d.May, d.Jun, d.Jul, d.Aug, d.Sep, d.Oct, d.Nov, d.Dec];
                 const validTemps = monthlyTemps.filter(t => !isNaN(t));
                 d.AnnualAvg = d3.mean(validTemps);
             });
 
             data = data.filter(d => !isNaN(d.AnnualAvg));
-
-            // Aggregate data by decade
+            
+            //create some bins for the data
             const decadeData = [];
             const decadeMap = new Map();
 
@@ -94,6 +96,8 @@
                 decadeMap.get(decade).push(d.AnnualAvg);
             });
 
+
+            //average rahh
             decadeMap.forEach((temps, decade) => {
                 decadeData.push({
                     decade: decade,

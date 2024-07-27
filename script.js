@@ -1,5 +1,6 @@
+//this became useless because i just coded it in the html... ik its bad practice im sorry :<
+
 d3.csv("global_temperature.csv").then(function(data) {
-    // Parse the data and compute annual averages
     data.forEach(d => {
       d.Year = +d.Year;
       d.Jan = +d.Jan;
@@ -15,23 +16,19 @@ d3.csv("global_temperature.csv").then(function(data) {
       d.Nov = +d.Nov;
       d.Dec = +d.Dec;
   
-      // Calculate annual average, ignoring NaN values
       const monthlyTemps = [d.Jan, d.Feb, d.Mar, d.Apr, d.May, d.Jun, d.Jul, d.Aug, d.Sep, d.Oct, d.Nov, d.Dec];
       const validTemps = monthlyTemps.filter(t => !isNaN(t));
       d.AnnualAvg = d3.mean(validTemps);
     });
   
-    // Filter out rows with missing data
     data = data.filter(d => !isNaN(d.AnnualAvg));
   
     console.log("Parsed Data:", data); // Check the parsed data in the console
   
-    // Scene 1: Introduction to global temperatures
     const scene1 = d3.select("#scene-1");
     scene1.append("h2").text("Global Temperature Rise");
     scene1.append("p").text("An overview of the rise in global temperatures over the past century.");
   
-    // Scene 2: Visualization of temperature rise over decades
     const scene2 = d3.select("#scene-2");
     const margin = {top: 20, right: 30, bottom: 30, left: 40},
           width = 800 - margin.left - margin.right,
@@ -111,14 +108,12 @@ d3.csv("global_temperature.csv").then(function(data) {
     });
   
     function updateChart(filteredData) {
-        // Update the line path
         svg.select("path")
             .datum(filteredData)
             .attr("d", d3.line()
                 .x(d => x(d.Year))
                 .y(d => y(d.AnnualAvg)));
   
-        // Update the circles
         const circles = svg.selectAll("circle")
             .data(filteredData);
   
@@ -133,7 +128,6 @@ d3.csv("global_temperature.csv").then(function(data) {
     }
   });
   
-  // Button events for scene navigation
   document.getElementById('scene1-button').addEventListener('click', function() {
       d3.select("#scene-1").style("display", "block");
       d3.select("#scene-2").style("display", "none");
