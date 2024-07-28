@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Global Temperature Visualization</title>
-    <!-- from my first css-->
     <style>
         .tooltip {
             position: absolute;
@@ -50,20 +49,18 @@
     <div id="scene-2"></div>
     <div id="scene-3"></div>
 
-    <!-- adding the navigation buttons-->
+    <!-- adding the navigation buttons -->
     <button id="scene1-button">Scene 1</button>
     <button id="scene2-button">Scene 2</button>
     <button id="scene3-button">Scene 3</button>
 
-
-    <!-- adding the slider-->
+    <!-- adding the slider -->
     <input type="range" min="1880" max="2023" value="1880" id="yearSlider">
     <p>Year: <span id="yearValue">1880</span></p>
 
     <!-- Include D3.js from a CDN -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
-        //calculating the averages 
         d3.csv("global_temperature.csv").then(function(data) {
             data.forEach(d => {
                 d.Year = +d.Year;
@@ -80,15 +77,13 @@
                 d.Nov = +d.Nov;
                 d.Dec = +d.Dec;
 
-
                 const monthlyTemps = [d.Jan, d.Feb, d.Mar, d.Apr, d.May, d.Jun, d.Jul, d.Aug, d.Sep, d.Oct, d.Nov, d.Dec];
                 const validTemps = monthlyTemps.filter(t => !isNaN(t));
                 d.AnnualAvg = d3.mean(validTemps);
             });
 
             data = data.filter(d => !isNaN(d.AnnualAvg));
-            
-            //create some bins for the data
+
             const decadeData = [];
             const decadeMap = new Map();
 
@@ -100,8 +95,6 @@
                 decadeMap.get(decade).push(d.AnnualAvg);
             });
 
-
-            //average rahh
             decadeMap.forEach((temps, decade) => {
                 decadeData.push({
                     decade: decade,
@@ -109,19 +102,18 @@
                 });
             });
 
-            //text
             const scene1 = d3.select("#scene-1");
             scene1.append("h2").text("Global Temperature Rise");
-            scene1.append("p").attr("class", "overview").text("Scene 1, Hello everyone, my name is Rachel and here is my final project. I chose to inform you all about the very realness of climate change. The data provided below is from NASA GISS, and displays the temperature anomoly data from 1880 till now.");
+            scene1.append("p").attr("class", "overview").text("Scene 1, Hello everyone, my name is Rachel and here is my final project. I chose to inform you all about the very realness of climate change. The data provided below is from NASA GISS, and displays the temperature anomaly data from 1880 till now.");
 
-            const margin = {top: 20, right: 30, bottom: 40, left: 60},
+            const margin = { top: 20, right: 30, bottom: 40, left: 60 },
                   width = 800 - margin.left - margin.right,
                   height = 400 - margin.top - margin.bottom;
 
             const svg1 = scene1.append("svg")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
-              .append("g")
+                .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
             const x1 = d3.scaleBand()
@@ -151,17 +143,14 @@
                 .attr("height", d => height - y1(d.avgTemp))
                 .attr("fill", "steelblue");
 
-
-            //start of scene 2
             const scene2 = d3.select("#scene-2");
-
             scene2.append("h2").text("Global Temperature Rise");
-            scene2.append("p").attr("class", "overview").text("Use the slider to display more information on the graph! As you slide your year to the right, notice a trend in the data? Feel free to click on one of the data points to display the year more specifically. ");
-            
+            scene2.append("p").attr("class", "overview").text("Use the slider to display more information on the graph! As you slide your year to the right, notice a trend in the data? Feel free to click on one of the data points to display the year more specifically.");
+
             const svg2 = scene2.append("svg")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
-              .append("g")
+                .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
             const x2 = d3.scaleLinear()
@@ -207,14 +196,11 @@
             }
 
             function updateTable(selectedData) {
-
-                //scene 3 !!
                 const scene3 = d3.select("#scene-3");
                 scene3.selectAll("table").remove();
 
                 scene3.append("h2").text("Global Temperature Rise");
-                scene3.append("p").attr("class", "overview").text("Here is a table displaying the monthly values for the year you selected! As you can tell, there might not be a noticeable change on the month to month basis. ");
-            
+                scene3.append("p").attr("class", "overview").text("Here is a table displaying the monthly values for the year you selected! As you can tell, there might not be a noticeable change on the month to month basis.");
 
                 const table = scene3.append("table");
                 const thead = table.append("thead");
@@ -236,7 +222,6 @@
                     .text(d => d);
             }
 
-            //adjusting the points
             const circles = svg2.selectAll("circle")
                 .data(data)
                 .enter().append("circle")
@@ -265,9 +250,34 @@
                     d3.select("#scene-2").style("display", "none");
                     d3.select("#scene-3").style("display", "block");
                 });
-            
-            //TOOLTIPS FOR THE CIRCLES
+
             addTooltip(circles);
+
+            // Annotation data
+            const annotationData = {
+                year: 2016,
+                text: "Warmest Year"
+            };
+
+            // Add annotation
+            const annotation = svg2.append("g")
+                .attr("class", "annotation");
+
+            annotation.append("text")
+                .attr("x", x2(annotationData.year))
+                .attr("y", y2(data.find(d => d.Year === annotationData.year).AnnualAvg) - 10)
+                .attr("dy", ".35em")
+                .text(annotationData.text)
+                .style("fill", "red")
+                .style("font-size", "12px")
+                .style("font-weight", "bold");
+
+            annotation.append("line")
+                .attr("x1", x2(annotationData.year))
+                .attr("y1", y2(data.find(d => d.Year === annotationData.year).AnnualAvg))
+                .attr("x2", x2(annotationData.year))
+                .attr("y2", y2(data.find(d => d.Year === annotationData.year).AnnualAvg) - 10)
+                .attr("stroke", "red");
 
             const yearSlider = document.getElementById('yearSlider');
             const yearValue = document.getElementById('yearValue');
